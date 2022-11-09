@@ -1,13 +1,13 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 
 // Pretty much just stolen from:
 // https://github.com/toby/serde-bencode/blob/master/examples/parse_torrent.rs
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Node(String, i64);
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct File {
     path: Vec<String>,
     length: i64,
@@ -15,7 +15,7 @@ pub struct File {
     md5sum: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Info {
     pub name: String,
     pub pieces: ByteBuf,
@@ -36,7 +36,7 @@ pub struct Info {
     pub root_hash: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Torrent {
     pub info: Info,
     #[serde(default)]
