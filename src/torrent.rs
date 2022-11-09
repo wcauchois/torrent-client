@@ -1,7 +1,5 @@
 use serde::Deserialize;
-use serde_bencode::de;
 use serde_bytes::ByteBuf;
-use std::io::{self, Read};
 
 // Pretty much just stolen from:
 // https://github.com/toby/serde-bencode/blob/master/examples/parse_torrent.rs
@@ -19,47 +17,47 @@ pub struct File {
 
 #[derive(Debug, Deserialize)]
 pub struct Info {
-    name: String,
-    pieces: ByteBuf,
+    pub name: String,
+    pub pieces: ByteBuf,
     #[serde(rename = "piece length")]
-    piece_length: i64,
+    pub piece_length: i64,
     #[serde(default)]
-    md5sum: Option<String>,
+    pub md5sum: Option<String>,
     #[serde(default)]
-    length: Option<i64>,
+    pub length: Option<i64>,
     #[serde(default)]
-    files: Option<Vec<File>>,
+    pub files: Option<Vec<File>>,
     #[serde(default)]
-    private: Option<u8>,
+    pub private: Option<u8>,
     #[serde(default)]
-    path: Option<Vec<String>>,
+    pub path: Option<Vec<String>>,
     #[serde(default)]
     #[serde(rename = "root hash")]
-    root_hash: Option<String>,
+    pub root_hash: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Torrent {
-    info: Info,
+    pub info: Info,
     #[serde(default)]
-    announce: Option<String>,
+    pub announce: Option<String>,
     #[serde(default)]
-    nodes: Option<Vec<Node>>,
+    pub nodes: Option<Vec<Node>>,
     #[serde(default)]
-    encoding: Option<String>,
+    pub encoding: Option<String>,
     #[serde(default)]
-    httpseeds: Option<Vec<String>>,
+    pub httpseeds: Option<Vec<String>>,
     #[serde(default)]
     #[serde(rename = "announce-list")]
-    announce_list: Option<Vec<Vec<String>>>,
+    pub announce_list: Option<Vec<Vec<String>>>,
     #[serde(default)]
     #[serde(rename = "creation date")]
-    creation_date: Option<i64>,
+    pub creation_date: Option<i64>,
     #[serde(rename = "comment")]
-    comment: Option<String>,
+    pub comment: Option<String>,
     #[serde(default)]
     #[serde(rename = "created by")]
-    created_by: Option<String>,
+    pub created_by: Option<String>,
 }
 
 pub fn render_torrent(torrent: &Torrent) {
