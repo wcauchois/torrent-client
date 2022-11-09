@@ -10,3 +10,4 @@ serde_bencode = "0.2.3"
 serde = { version = "1.0.147", features = ["derive"] }
 serde_bytes = "0.11.7"
 tokio = { version = "1.21.2", features = ["full"] }
+anyhow = "1.0.66"

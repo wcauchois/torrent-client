@@ -5,14 +5,14 @@ use std::io::Read;
 mod torrent;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     let mut file = File::open("debian.torrent").unwrap();
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer).unwrap();
     println!("read {} bytes", buffer.len());
 
-    match de::from_bytes::<torrent::Torrent>(&buffer) {
-        Ok(t) => torrent::render_torrent(&t),
-        Err(e) => println!("ERROR: {:?}", e),
-    };
+    let t = de::from_bytes::<torrent::Torrent>(&buffer)?;
+    torrent::render_torrent(&t);
+
+    Ok(())
 }
