@@ -1,8 +1,16 @@
-use serde::{Deserialize, Serialize, Serializer};
+use nom::bytes::complete::take_while_m_n;
+use nom::combinator::{map, map_res};
+use nom::error::VerboseError;
+use nom::multi::many0;
+use nom::sequence::tuple;
+use nom::IResult;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_bytes::ByteBuf;
 use sha1::{Digest, Sha1};
 use std::fs::File;
 use std::io::Read;
+use std::iter::Iterator;
+use std::net::Ipv4Addr;
 
 mod torrent;
 
@@ -17,10 +25,46 @@ struct AnnounceParamsExceptInfoHash {
     left: i32,
 }
 
+#[derive(Debug)]
+struct PeersList {
+    peers: Vec<(Ipv4Addr, u16)>,
+}
+
+impl<'de> Deserialize<'de> for PeersList {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let buf: ByteBuf = Deserialize::deserialize(deserializer)?;
+
+        fn byte(input: &[u8]) -> IResult<&[u8], u8> {
+            // It's not easy to parse a single byte: https://github.com/Geal/nom/issues/1054
+            map(take_while_m_n(1, 1, |_| true), |bytes: &[u8]| bytes[0])(input)
+        }
+
+        fn ip_and_port(input: &[u8]) -> IResult<&[u8], (Ipv4Addr, u16)> {
+            let (input, ip_bytes) = tuple((byte, byte, byte, byte))(input)?;
+            let ip = Ipv4Addr::new(ip_bytes.0, ip_bytes.1, ip_bytes.2, ip_bytes.3);
+            let (input, port_bytes) = tuple((byte, byte))(input)?;
+            let port = u16::from_be_bytes([port_bytes.0, port_bytes.1]);
+            Ok((input, (ip, port)))
+        }
+
+        let buf_vec = buf.to_vec();
+        // Peers is a list of IP and ports.
+        let peers = match many0(ip_and_port)(&buf_vec) {
+            Ok((_input, peers)) => Ok(peers),
+            Err(err) => Err(serde::de::Error::custom(err.to_string())),
+        }?;
+
+        Ok(PeersList { peers })
+    }
+}
+
 #[derive(Deserialize, Debug)]
 struct AnnounceResponse {
     interval: i32,
-    peers: ByteBuf,
+    peers: PeersList,
 }
 
 #[tokio::main]
